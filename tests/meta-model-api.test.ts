@@ -37,9 +37,13 @@ function createExtension() {
 
 function createContext(configured: boolean, source?: string) {
   const notifications: Notification[] = [];
+  const authStatusProviderIds: string[] = [];
   const modelRegistry = {
     find: () => ({ provider: "meta-ai", id: "muse-spark-1.1" }),
-    getProviderAuthStatus: () => ({ configured, source }),
+    getProviderAuthStatus: (providerId: string) => {
+      authStatusProviderIds.push(providerId);
+      return { configured, source };
+    },
   };
 
   Object.defineProperty(modelRegistry, "authStorage", {
@@ -60,6 +64,7 @@ function createContext(configured: boolean, source?: string) {
       },
     },
     notifications,
+    authStatusProviderIds,
   };
 }
 
@@ -69,10 +74,11 @@ describe("Meta Model API authentication", () => {
   test("uses public stored auth status and suppresses the startup warning", async () => {
     clearAuthEnv();
     const extension = createExtension();
-    const { context, notifications } = createContext(true, "stored");
+    const { context, notifications, authStatusProviderIds } = createContext(true, "stored");
 
     await extension.handlers.get("session_start")!(undefined, context);
 
+    expect(authStatusProviderIds).toEqual(["meta-ai"]);
     expect(notifications).toEqual([]);
   });
 
