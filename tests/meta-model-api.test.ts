@@ -108,6 +108,20 @@ describe("Meta Model API authentication", () => {
     expect(notifications[0]?.message).toContain("not authenticated");
   });
 
+  test("reports META_API_KEY when public status reflects the compatibility shim", async () => {
+    clearAuthEnv();
+    process.env.META_API_KEY = "test-only-key";
+    const extension = createExtension();
+    const { context, notifications } = createContext(true, "MODEL_API_KEY");
+
+    await extension.commands.get("meta")!.handler("status", context);
+
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]?.message).toContain("Status: configured");
+    expect(notifications[0]?.message).toContain("Source: META_API_KEY");
+    expect(notifications[0]?.message).not.toContain("test-only-key");
+  });
+
   for (const envName of ENV_KEYS) {
     test(`preserves the ${envName} environment fallback without exposing its value`, async () => {
       clearAuthEnv();

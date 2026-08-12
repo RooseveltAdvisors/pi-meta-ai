@@ -38,11 +38,17 @@ function getAuthSummary(ctx: any): {
   const envSource =
     environmentAuthSource ||
     (process.env[ENV_VAR] ? ENV_VAR : process.env[META_ENV_VAR] ? META_ENV_VAR : undefined);
+  const providerSource = providerStatus.label || providerStatus.source;
+  const isShimmedMetaEnvironment =
+    environmentAuthSource === META_ENV_VAR &&
+    (providerStatus.label === ENV_VAR || (!providerStatus.label && providerStatus.source === ENV_VAR));
 
   return {
     configured: providerStatus.configured || envConfigured,
     source: providerStatus.configured
-      ? providerStatus.label || providerStatus.source || "provider auth"
+      ? isShimmedMetaEnvironment
+        ? META_ENV_VAR
+        : providerSource || "provider auth"
       : envSource || "none",
     providerStatus,
   };
