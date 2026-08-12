@@ -16,6 +16,7 @@ const MODEL_ID_12 = "muse-spark-1.2";
 const MODEL_ID_12_CONTRIB = "muse-spark-1.2-contributor";
 const ENV_VAR = "MODEL_API_KEY";
 const META_ENV_VAR = "META_API_KEY";
+let environmentAuthSource: string | undefined;
 
 function getEnvKey(): string | undefined {
   return process.env[ENV_VAR] || process.env[META_ENV_VAR];
@@ -34,11 +35,9 @@ function getAuthSummary(ctx: any): {
 } {
   const providerStatus: ProviderAuthStatus = ctx.modelRegistry.getProviderAuthStatus(PROVIDER_ID);
   const envConfigured = !!getEnvKey();
-  const envSource = process.env[ENV_VAR]
-    ? ENV_VAR
-    : process.env[META_ENV_VAR]
-      ? META_ENV_VAR
-      : undefined;
+  const envSource =
+    environmentAuthSource ||
+    (process.env[ENV_VAR] ? ENV_VAR : process.env[META_ENV_VAR] ? META_ENV_VAR : undefined);
 
   return {
     configured: providerStatus.configured || envConfigured,
@@ -53,6 +52,13 @@ export default function (pi: ExtensionAPI) {
   // Allow META_API_KEY as fallback — shim to MODEL_API_KEY so pi's $MODEL_API_KEY interpolation works.
   if (!process.env[ENV_VAR] && process.env[META_ENV_VAR]) {
     process.env[ENV_VAR] = process.env[META_ENV_VAR];
+    environmentAuthSource = META_ENV_VAR;
+  } else {
+    environmentAuthSource = process.env[ENV_VAR]
+      ? ENV_VAR
+      : process.env[META_ENV_VAR]
+        ? META_ENV_VAR
+        : undefined;
   }
 
   pi.registerProvider(PROVIDER_ID, {

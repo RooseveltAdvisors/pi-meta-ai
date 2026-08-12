@@ -122,6 +122,7 @@ describe("Meta Model API authentication", () => {
 
       expect(notifications).toHaveLength(1);
       expect(notifications[0]?.message).toContain("Status: configured");
+      expect(notifications[0]?.message).toContain(`Source: ${envName}`);
       expect(notifications[0]?.message).not.toContain("test-only-key");
     });
   }
