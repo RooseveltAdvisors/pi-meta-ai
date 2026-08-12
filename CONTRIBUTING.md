@@ -36,7 +36,7 @@ pi -e ./extensions/meta-model-api
 
 - `npm run typecheck` — TypeScript validation (no emit)
 - Manual test checklist:
-  - [ ] `/meta status` shows masked key and `Resolved: yes` when authenticated
+  - [ ] `/meta status` shows authentication status/source and `Resolved: yes` when authenticated
   - [ ] `/meta status` shows warning when not authenticated
   - [ ] `/login` → API key → Meta Model API works
   - [ ] Env var fallback works (`MODEL_API_KEY` and `META_API_KEY`)
@@ -61,4 +61,4 @@ pi -e ./extensions/meta-model-api
 ## Reporting issues
 
 Use GitHub issues: https://github.com/seemethere/pi-meta-ai/issues
-Include pi version (`pi --version`), Node version, and `/meta status` output (masked).
+Include pi version (`pi --version`), Node version, and `/meta status` output (which never includes keys).
