@@ -21,17 +21,15 @@ Verify: `pi --version` should be >=0.80
 **From source (dev):**
 
 ```bash
-git clone https://github.com/seemethere/pi-meta-ai
+git clone https://github.com/RooseveltAdvisors/pi-meta-ai
 cd pi-meta-ai
 pi -e ./extensions/meta-model-api
 ```
 
-**As pi package (once published):**
+**As a pi package:**
 
 ```bash
-pi install git:github.com/seemethere/pi-meta-ai
-# or
-pi install npm:pi-meta-ai
+pi install git:github.com/RooseveltAdvisors/pi-meta-ai
 ```
 
 ## Quick start
