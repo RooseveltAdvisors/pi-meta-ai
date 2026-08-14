@@ -16,7 +16,7 @@
 ## Reporting a Vulnerability
 
 - Do NOT open a public issue for sensitive security reports
-- Email maintainers via GitHub Security Advisories: https://github.com/seemethere/pi-meta-ai/security/advisories/new
+- Email maintainers via GitHub Security Advisories: https://github.com/RooseveltAdvisors/pi-meta-ai/security/advisories/new
 - Or open an issue marked as security concern with no secret details
 
 We aim to respond within 5 business days.

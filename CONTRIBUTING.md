@@ -3,10 +3,10 @@
 ## Getting started
 
 ```bash
-git clone https://github.com/seemethere/pi-meta-ai
+git clone https://github.com/RooseveltAdvisors/pi-meta-ai
 cd pi-meta-ai
-npm install
-npm run typecheck
+bun install
+bun run test
 ```
 
 ## Local dev
@@ -21,7 +21,7 @@ Inside pi:
 
 ```
 /login → API key → Meta Model API → paste LLM|... key
-/model → meta-ai/muse-spark-1.1
+/model → meta-ai/muse-spark-1.2
 /meta status
 ```
 
@@ -34,13 +34,14 @@ pi -e ./extensions/meta-model-api
 
 ## Tests & validation
 
-- `npm run typecheck` — TypeScript validation (no emit)
+- `bun run test` — focused regression tests, then TypeScript validation
+- `bun run typecheck` — TypeScript validation only (no emit)
 - Manual test checklist:
   - [ ] `/meta status` shows authentication status/source and `Resolved: yes` when authenticated
   - [ ] `/meta status` shows warning when not authenticated
   - [ ] `/login` → API key → Meta Model API works
   - [ ] Env var fallback works (`MODEL_API_KEY` and `META_API_KEY`)
-  - [ ] `/model` lists `meta-ai/muse-spark-1.1`
+  - [ ] `/model` lists all supported Meta models documented in the README
   - [ ] Tool calling works (read, bash, etc.)
   - [ ] Thinking levels map correctly
   - [ ] No footer status pollution (`setStatus` cleared on start/shutdown)
@@ -55,10 +56,10 @@ pi -e ./extensions/meta-model-api
 ## Release
 
 - Update version in `package.json`
-- `npm pack --dry-run` — verify files list
+- `bun pm pack --dry-run` — verify files list
 - Tag and publish per pi package registry guidance
 
 ## Reporting issues
 
-Use GitHub issues: https://github.com/seemethere/pi-meta-ai/issues
+Use GitHub issues: https://github.com/RooseveltAdvisors/pi-meta-ai/issues
 Include pi version (`pi --version`), Node version, and `/meta status` output (which never includes keys).
