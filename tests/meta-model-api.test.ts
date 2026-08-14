@@ -18,11 +18,11 @@ function restoreAuthEnv() {
   }
 }
 
-function createExtension() {
+function createExtension(registerExtension: typeof registerMetaExtension = registerMetaExtension) {
   const handlers = new Map<string, (event: unknown, ctx: unknown) => Promise<void>>();
   const commands = new Map<string, { handler: (args: string, ctx: unknown) => Promise<void> }>();
 
-  registerMetaExtension({
+  registerExtension({
     registerProvider() {},
     on(event, handler) {
       handlers.set(event, handler as (event: unknown, ctx: unknown) => Promise<void>);
@@ -118,6 +118,24 @@ describe("Meta Model API authentication", () => {
 
     expect(notifications).toHaveLength(1);
     expect(notifications[0]?.message).toContain("Status: configured");
+    expect(notifications[0]?.message).toContain("Source: META_API_KEY");
+    expect(notifications[0]?.message).not.toContain("test-only-key");
+  });
+
+  test("preserves META_API_KEY source across extension reloads", async () => {
+    clearAuthEnv();
+    process.env.META_API_KEY = "test-only-key";
+    createExtension();
+
+    const extensionUrl = new URL("../extensions/meta-model-api/index.ts", import.meta.url);
+    extensionUrl.searchParams.set("reload", "meta-env-provenance");
+    const reloadedModule = await import(extensionUrl.href);
+    const extension = createExtension(reloadedModule.default);
+    const { context, notifications } = createContext(true, "MODEL_API_KEY");
+
+    await extension.commands.get("meta")!.handler("status", context);
+
+    expect(notifications).toHaveLength(1);
     expect(notifications[0]?.message).toContain("Source: META_API_KEY");
     expect(notifications[0]?.message).not.toContain("test-only-key");
   });

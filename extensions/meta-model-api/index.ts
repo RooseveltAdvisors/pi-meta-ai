@@ -16,6 +16,8 @@ const MODEL_ID_12 = "muse-spark-1.2";
 const MODEL_ID_12_CONTRIB = "muse-spark-1.2-contributor";
 const ENV_VAR = "MODEL_API_KEY";
 const META_ENV_VAR = "META_API_KEY";
+const META_ENV_SHIM_MARKER = Symbol.for("pi-meta-ai.meta-env-shim");
+const runtimeState = globalThis as typeof globalThis & Record<symbol, unknown>;
 let environmentAuthSource: string | undefined;
 
 function getEnvKey(): string | undefined {
@@ -56,15 +58,24 @@ function getAuthSummary(ctx: any): {
 
 export default function (pi: ExtensionAPI) {
   // Allow META_API_KEY as fallback — shim to MODEL_API_KEY so pi's $MODEL_API_KEY interpolation works.
-  if (!process.env[ENV_VAR] && process.env[META_ENV_VAR]) {
-    process.env[ENV_VAR] = process.env[META_ENV_VAR];
+  const modelEnvKey = process.env[ENV_VAR];
+  const metaEnvKey = process.env[META_ENV_VAR];
+  const hasPersistedMetaShim =
+    runtimeState[META_ENV_SHIM_MARKER] === true && !!modelEnvKey && modelEnvKey === metaEnvKey;
+
+  if (!modelEnvKey && metaEnvKey) {
+    process.env[ENV_VAR] = metaEnvKey;
+    runtimeState[META_ENV_SHIM_MARKER] = true;
     environmentAuthSource = META_ENV_VAR;
   } else {
-    environmentAuthSource = process.env[ENV_VAR]
-      ? ENV_VAR
-      : process.env[META_ENV_VAR]
-        ? META_ENV_VAR
-        : undefined;
+    environmentAuthSource = hasPersistedMetaShim
+      ? META_ENV_VAR
+      : modelEnvKey
+        ? ENV_VAR
+        : metaEnvKey
+          ? META_ENV_VAR
+          : undefined;
+    runtimeState[META_ENV_SHIM_MARKER] = hasPersistedMetaShim;
   }
 
   pi.registerProvider(PROVIDER_ID, {
