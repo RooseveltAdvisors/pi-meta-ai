@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 ## 0.1.1 - 2026-07-09
 
 ### Fixed
-- Auth check now correctly rejects legacy `oauth` credentials unless env var present, prevents false `✓ ready` status (codex blocker fix)
+- Auth checks now use public provider auth status and environment fallback, preventing false unauthenticated warnings without inspecting private auth storage
 - README env-var quickstart clarifies `pi -e ./extensions/meta-model-api` must stay loaded for source installs
-- `getProviderAuthStatus` + `hasValidStored` used instead of `find()` for auth detection
+- `/meta status` reports authentication source and status without exposing credentials
 
 ### Added
 - `LICENSE` file (MIT)

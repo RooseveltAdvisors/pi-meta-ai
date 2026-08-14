@@ -10,13 +10,13 @@
 
 - Never commit API keys (`LLM|...`), `.env`, or `~/.pi/agent/auth.json`
 - Use `pi` `/login` flow which stores keys in `~/.pi/agent/auth.json` (chmod 600) or env vars
-- `/meta status` masks keys as `LLM|...abcd` — safe to share screenshots
+- `/meta status` reports authentication status and source without displaying keys
 - If you accidentally commit a key, rotate immediately at https://dev.meta.ai → API keys
 
 ## Reporting a Vulnerability
 
 - Do NOT open a public issue for sensitive security reports
-- Email maintainers via GitHub Security Advisories: https://github.com/seemethere/pi-meta-ai/security/advisories/new
+- Email maintainers via GitHub Security Advisories: https://github.com/RooseveltAdvisors/pi-meta-ai/security/advisories/new
 - Or open an issue marked as security concern with no secret details
 
 We aim to respond within 5 business days.
