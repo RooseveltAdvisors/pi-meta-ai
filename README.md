@@ -73,7 +73,7 @@ pi install npm:pi-meta-ai
 
 ## Commands
 
-- `/meta status` — show provider, masked key status, auth source, active model
+- `/meta status` — show provider, authentication status/source, active model (without displaying keys)
 - `/meta help` — usage help
 - `/login` — manage API keys
 - `/model` — switch models
@@ -156,7 +156,7 @@ Extension install is recommended for better login UX and future updates.
 
 - Never commit real API keys, `.env`, or `~/.pi/agent/auth.json`
 - Use `/login` (stored in OS-protected `auth.json`) or env vars for keys
-- Keys are displayed masked (e.g., `LLM|...abcd`) in `/meta status`
+- `/meta status` reports authentication status and source without displaying keys
 - See [SECURITY.md](./SECURITY.md)
 
 ## Development

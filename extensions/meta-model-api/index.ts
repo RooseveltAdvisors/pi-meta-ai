@@ -17,22 +17,37 @@ const MODEL_ID_12_CONTRIB = "muse-spark-1.2-contributor";
 const ENV_VAR = "MODEL_API_KEY";
 const META_ENV_VAR = "META_API_KEY";
 
-function maskKey(key: string): string {
-  if (!key) return "(none)";
-  if (key.length <= 12) return "***";
-  return `${key.slice(0, 4)}...${key.slice(-4)}`;
-}
-
 function getEnvKey(): string | undefined {
   return process.env[ENV_VAR] || process.env[META_ENV_VAR];
 }
 
-function getStoredCredential(ctx: any): { type?: string; key?: string } | undefined {
-  try {
-    return ctx.modelRegistry.authStorage?.get?.(PROVIDER_ID);
-  } catch {
-    return undefined;
+type ProviderAuthStatus = {
+  configured: boolean;
+  source?: string;
+};
+
+function getAuthState(ctx: any): {
+  provider: ProviderAuthStatus;
+  envConfigured: boolean;
+  configured: boolean;
+} {
+  const provider = ctx.modelRegistry.getProviderAuthStatus(PROVIDER_ID) as ProviderAuthStatus;
+  const envConfigured = !!getEnvKey();
+
+  return {
+    provider,
+    envConfigured,
+    configured: envConfigured || provider.configured,
+  };
+}
+
+function getEnvironmentStatus(): string {
+  if (process.env[ENV_VAR] && process.env[META_ENV_VAR]) {
+    return `${ENV_VAR} configured (${META_ENV_VAR} fallback detected)`;
   }
+  if (process.env[ENV_VAR]) return `${ENV_VAR} configured`;
+  if (process.env[META_ENV_VAR]) return `${META_ENV_VAR} configured (fallback)`;
+  return "not configured";
 }
 
 export default function (pi: ExtensionAPI) {
@@ -124,21 +139,9 @@ export default function (pi: ExtensionAPI) {
       return;
     }
 
-    const stored = getStoredCredential(ctx);
-    const hasEnv = !!getEnvKey();
-    const isLegacy = stored && stored.type !== "api_key";
-    const hasValidStored = stored?.type === "api_key" && !!stored.key;
-    const isAuthenticated = hasEnv || hasValidStored;
+    const { configured } = getAuthState(ctx);
 
-    if (isLegacy && !hasEnv) {
-      ctx.ui.notify(
-        `Meta Model API has legacy ${stored.type} credential. Run /logout ${PROVIDER_ID} then /login → API key → '${DISPLAY_NAME}' to migrate.`,
-        "warning"
-      );
-      return;
-    }
-
-    if (!isAuthenticated) {
+    if (!configured) {
       ctx.ui.notify(
         `Meta Model API not authenticated. Run /login → API key → '${DISPLAY_NAME}' to add your key, or export ${ENV_VAR}=LLM|... before launching pi. Then /model → ${PROVIDER_ID}/${MODEL_ID}`,
         "warning"
@@ -156,20 +159,9 @@ export default function (pi: ExtensionAPI) {
       const sub = (args || "").trim().split(/\s+/)[0] || "status";
 
       if (sub === "status") {
-        const envKey = getEnvKey();
         const model = ctx.modelRegistry.find(PROVIDER_ID, MODEL_ID);
-        const authStatus = ctx.modelRegistry.getProviderAuthStatus(PROVIDER_ID);
-        const stored = getStoredCredential(ctx);
+        const { provider: authStatus, configured } = getAuthState(ctx);
         const isActive = ctx.model?.provider === PROVIDER_ID && ctx.model?.id === MODEL_ID;
-        const isLegacy = stored && stored.type !== "api_key";
-        const hasValidStored = stored?.type === "api_key" && !!stored.key;
-        const hasAuth = !!envKey || hasValidStored;
-
-        const storedInfo = stored
-          ? stored.type === "api_key"
-            ? `api_key ${maskKey(stored.key || "")} (source: ${authStatus.source || "stored"})`
-            : `${stored.type} — legacy/invalid credential, run /logout ${PROVIDER_ID} then re-login via API key`
-          : "(not in auth.json)";
 
         const lines = [
           `${DISPLAY_NAME} — Status`,
@@ -183,9 +175,9 @@ export default function (pi: ExtensionAPI) {
           `  API: openai-responses`,
           ``,
           `Auth:`,
-          `  Env ${ENV_VAR}: ${envKey ? maskKey(envKey) : "(not set)"} ${process.env[META_ENV_VAR] ? `(fallback ${META_ENV_VAR} detected)` : ""}`,
-          `  auth.json: ${storedInfo}`,
-          `  Resolved: ${hasAuth ? "yes ✓ ready" : "no — run /login or set env var"}`,
+          `  Environment: ${getEnvironmentStatus()}`,
+          `  Provider auth: ${authStatus.configured ? "configured" : "not configured"}${authStatus.source ? ` (source: ${authStatus.source})` : ""}`,
+          `  Resolved: ${configured ? "yes ✓ ready" : "no — run /login or set env var"}`,
           ``,
           `State:`,
           `  Model registered: ${model ? "yes" : "no"}`,
@@ -199,7 +191,7 @@ export default function (pi: ExtensionAPI) {
           `Env alternative: export ${ENV_VAR}=LLM|... then /reload (also supports ${META_ENV_VAR})`,
         ];
 
-        ctx.ui.notify(lines.join("\n"), hasAuth ? "info" : "warning");
+        ctx.ui.notify(lines.join("\n"), configured ? "info" : "warning");
         return;
       }
 
@@ -209,7 +201,7 @@ export default function (pi: ExtensionAPI) {
             `${DISPLAY_NAME} — Pi Extension`,
             ``,
             `Commands:`,
-            `  /meta status — show key status (masked), auth source, active model`,
+            `  /meta status — show authentication status/source, active model`,
             `  /meta help   — this help`,
             `  /login       — add your key via API key → Meta Model API`,
             `  /model       — select a Meta model (muse-spark-1.2, muse-spark-1.2-contributor, muse-spark-1.1)`,
