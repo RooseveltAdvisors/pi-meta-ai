@@ -7,6 +7,7 @@ git clone https://github.com/seemethere/pi-meta-ai
 cd pi-meta-ai
 npm install
 npm run typecheck
+npm test
 ```
 
 ## Local dev
@@ -35,8 +36,9 @@ pi -e ./extensions/meta-model-api
 ## Tests & validation
 
 - `npm run typecheck` — TypeScript validation (no emit)
+- `npm test` — regression tests and TypeScript validation
 - Manual test checklist:
-  - [ ] `/meta status` shows masked key and `Resolved: yes` when authenticated
+  - [ ] `/meta status` shows authentication status/source and `Resolved: yes` when authenticated
   - [ ] `/meta status` shows warning when not authenticated
   - [ ] `/login` → API key → Meta Model API works
   - [ ] Env var fallback works (`MODEL_API_KEY` and `META_API_KEY`)
@@ -61,4 +63,4 @@ pi -e ./extensions/meta-model-api
 ## Reporting issues
 
 Use GitHub issues: https://github.com/seemethere/pi-meta-ai/issues
-Include pi version (`pi --version`), Node version, and `/meta status` output (masked).
+Include pi version (`pi --version`), Node version, and `/meta status` output without secrets.
