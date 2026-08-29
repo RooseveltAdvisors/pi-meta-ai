@@ -66,12 +66,24 @@ describe("Meta Model API authentication", () => {
   });
 
   test("emits exactly one warning when neither public nor environment auth is configured", async () => {
-    const harness = createHarness({ configured: false });
+    const previousModelKey = process.env.MODEL_API_KEY;
+    const previousMetaKey = process.env.META_API_KEY;
+    delete process.env.MODEL_API_KEY;
+    delete process.env.META_API_KEY;
 
-    await start(harness);
+    try {
+      const harness = createHarness({ configured: false });
 
-    assert.equal(harness.notifications.length, 1);
-    assert.equal(harness.notifications[0]?.level, "warning");
+      await start(harness);
+
+      assert.equal(harness.notifications.length, 1);
+      assert.equal(harness.notifications[0]?.level, "warning");
+    } finally {
+      if (previousModelKey === undefined) delete process.env.MODEL_API_KEY;
+      else process.env.MODEL_API_KEY = previousModelKey;
+      if (previousMetaKey === undefined) delete process.env.META_API_KEY;
+      else process.env.META_API_KEY = previousMetaKey;
+    }
   });
 
   test("preserves META_API_KEY environment fallback without exposing the key", async () => {
