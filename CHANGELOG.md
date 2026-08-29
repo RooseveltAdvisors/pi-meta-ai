@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Fixed
+- Startup auth checks now use the public provider auth status, avoiding false unauthenticated warnings for stored credentials.
+- `/meta status` reports authentication status and source without displaying key fragments.
+
 ## 0.1.1 - 2026-07-09
 
 ### Fixed
